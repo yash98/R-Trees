@@ -30,3 +30,8 @@
 *.exe
 *.out
 *.app
+rtree
+sample_run
+
+# Defualt Tree
+tree.txt
