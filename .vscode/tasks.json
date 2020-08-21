@@ -3,7 +3,7 @@
         {
 			"type": "shell",
 			"label": "gcc build R Trees",
-			"command": "make",
+			"command": "rm -f tree.txt && make",
 			"args": [],
 			"options": {
 				"cwd": "${workspaceFolder}"

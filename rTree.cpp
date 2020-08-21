@@ -16,13 +16,13 @@ rTree::rTree(int dimensionalityInput, int maxCapInput,  const char * treeFileNam
 	int * data = (int *) this->rTreeFile.FirstPage().GetData();
 	
 	int tempRootId = -1;
-	memcpy((char *) data, &tempRootId, sizeof(int));
+	memcpy(data, &tempRootId, sizeof(int));
 	this->rootId = data;
 
-	memcpy((char *) (data + 1), &dimensionalityInput, sizeof(int));
+	memcpy(data + 1, &dimensionalityInput, sizeof(int));
 	this->dimensionality = data + 1;
 
-	memcpy((char *) (data + 2), &maxCapInput, sizeof(int));
+	memcpy(data + 2, &maxCapInput, sizeof(int));
 	this->maxCap = data + 2;
 
 	this->rTreeFile.MarkDirty(0);
@@ -56,8 +56,10 @@ void rTree::bulkLoad(const char * filename, int numPoints) {
 		leafNode currentLeaf(leafPage);
 		currentLeaf.initPageData(leafPage);
 		
+
+		int pointsLeft = numPoints-pointCount;
 		// Writing points to leaf
-		for (int i=0; i < std::min(maxCapGlobal, numPoints-pointCount); i++) {
+		for (int i=0; i < std::min(maxCapGlobal, pointsLeft); i++) {
 
 			// Page changing condition
 			if (pointFromPage >= maxPointFromPage) {
@@ -67,6 +69,12 @@ void rTree::bulkLoad(const char * filename, int numPoints) {
 			}
 
 			// Insert Point
+			std::cout << "B ";
+			for (int j = 0; j < dimensionalityGlobal; j++) {
+				std::cout << *(data+j) << " ";
+			}
+			std::cout << std::endl;
+
 			currentLeaf.insertPoint(data);
 
 			// Update data pointer for next point
@@ -98,7 +106,8 @@ int rTree::assignParent(int start, int end) {
 
 		internalNode parentNode(parentPage);
 		parentNode.initPageData(parentPage);
-		for (int i=0; i<std::min(maxCapGlobal, end-currentChildPage+1); i++) {
+		int leftNodes = std::min(maxCapGlobal, end-currentChildPage+1);
+		for (int i=0; i< leftNodes; i++) {
 			parentNode.insertNode(this->rTreeFile.PageAt(currentChildPage));
 
 			this->rTreeFile.UnpinPage(currentChildPage);
@@ -121,36 +130,56 @@ int rTree::insert(const int * point) {
 	return 1;
 }
 
+int depth;
+
 int rTree::query(const int * point) {
 	this->setGlobals();
-	return dfs(*this->rootId, point);
+	depth = 0;
+
+	int found = dfs(*this->rootId, point);
+
+	std::cout << "Q ";
+	for (int i = 0; i < dimensionalityGlobal; i++) {
+		std::cout << *(point+i) << " ";
+	}
+
+
+	std::cout << found << std::endl;
+	return found;
 }
 
+
 int rTree::dfs(int pageId, const int * point) {
+	std::cout << depth << std::endl;
+	depth++;
+
 	PageHandler currentNodePage = this->rTreeFile.PageAt(pageId);
 	NodeType nodeIs = TypeOf(currentNodePage);
+
+	int found = 0;
 
 	if (nodeIs == leaf) {
 		leafNode currentNode(currentNodePage);
 		for (int i=0; i < *currentNode.numPoints; i++) {
-			if (pointEquality(currentNode.containedPoints+i, point)) {
-				this->rTreeFile.UnpinPage(pageId);
-				return 1;
+			if (pointEquality(currentNode.containedPoints+(i*dimensionalityGlobal), point)) {
+				found = 1;
+				break;
 			}
 		}
 	} else {
 		internalNode currentNode(currentNodePage);
 		for (int i=0; i < *currentNode.numChilds; i++) {
-			const int * childMBR[2] = {currentNode.childMBRs[0]+i, currentNode.childMBRs[1]+i};
+			const int * childMBR[2] = {currentNode.childMBRs[0]+(i*dimensionalityGlobal), currentNode.childMBRs[1]+(i*dimensionalityGlobal)};
 			if (containedIn(childMBR, point)) {
-				this->rTreeFile.UnpinPage(pageId);
-				return dfs(*(currentNode.childIds+i), point);
+				found = dfs(*(currentNode.childIds+i), point);
+				if (found) break;
 			}
 		}
 	}
 
+	depth--;
 	this->rTreeFile.UnpinPage(pageId);
-	return 0;
+	return found;
 }
 
 int main(int argc, char * argv[]) {

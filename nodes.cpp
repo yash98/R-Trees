@@ -4,18 +4,54 @@
 #include <cstring>
 #include <limits>
 #include <algorithm>
+#include <iostream>
 
-int pointEquality(const int * a, const int * b) {
+int pointEquality(const int * a, const int * b) { 
+	
+	std::cout << "A ";
 	for (int i = 0; i < dimensionalityGlobal; i++) {
-		if (*(a+i) != *(b+i)) return 0;
+		std::cout << *(a+i) << " ";
 	}
+
+	std::cout << "B ";
+	for (int i = 0; i < dimensionalityGlobal; i++) {
+		std::cout << *(b+i) << " ";
+	}
+
+	for (int i = 0; i < dimensionalityGlobal; i++) {
+		if (*(a+i) != *(b+i)) {
+			std::cout << "FALSE" << std::endl;
+			return 0;
+		}
+	}
+	std::cout << "TRUE" << std::endl;
 	return 1;
 }
 
 int containedIn(const int * mbr[2], const int* p) {
+	std::cout << "MBR0 ";
 	for (int i = 0; i < dimensionalityGlobal; i++) {
-		if ((*(p+i) <= *(mbr[0]+i)) || (*(mbr[1]+i) <= *(p+i))) return 0;
+		std::cout << *(mbr[0]+i) << " ";
 	}
+
+	std::cout << "MBR1 ";
+	for (int i = 0; i < dimensionalityGlobal; i++) {
+		std::cout << *(mbr[1]+i) << " ";
+	}
+	
+	std::cout << "P ";
+	for (int i = 0; i < dimensionalityGlobal; i++) {
+		std::cout << *(p+i) << " ";
+	}
+	
+	for (int i = 0; i < dimensionalityGlobal; i++) {
+		if ((*(p+i) < *(mbr[0]+i)) || (*(mbr[1]+i) < *(p+i))) {
+			std::cout << "FALSE" << std::endl;
+			return 0;
+		}
+	}
+	
+	std::cout << "TRUE" << std::endl;
 	return 1;
 }
 
@@ -76,8 +112,8 @@ void internalNode::insertNode(PageHandler childPage) {
 		*(this->childIds + (*this->numChilds)) = child.selfId;
 
 		// set ChildMBRs
-		memcpy(this->childMBRs[0]+(*this->numChilds), child.mbr[0], sizeof(int) * dimensionalityGlobal);
-		memcpy(this->childMBRs[1]+(*this->numChilds), child.mbr[1], sizeof(int) * dimensionalityGlobal);
+		memcpy(this->childMBRs[0]+(*this->numChilds * dimensionalityGlobal), child.mbr[0], sizeof(int) * dimensionalityGlobal);
+		memcpy(this->childMBRs[1]+(*this->numChilds * dimensionalityGlobal), child.mbr[1], sizeof(int) * dimensionalityGlobal);
 
 		// Update mbr
 		for (int i = 0; i < dimensionalityGlobal; i++) {
@@ -98,8 +134,8 @@ void internalNode::insertNode(PageHandler childPage) {
 		*(this->childIds + (*this->numChilds)) = child.selfId;
 
 		// set ChildMBRs
-		memcpy(this->childMBRs[0]+(*this->numChilds), child.mbr[0], sizeof(int) * dimensionalityGlobal);
-		memcpy(this->childMBRs[1]+(*this->numChilds), child.mbr[1], sizeof(int) * dimensionalityGlobal);
+		memcpy(this->childMBRs[0]+(*this->numChilds * dimensionalityGlobal), child.mbr[0], sizeof(int) * dimensionalityGlobal);
+		memcpy(this->childMBRs[1]+(*this->numChilds * dimensionalityGlobal), child.mbr[1], sizeof(int) * dimensionalityGlobal);
 
 		// Update mbr
 		for (int i = 0; i < dimensionalityGlobal; i++) {
@@ -137,12 +173,26 @@ leafNode::leafNode(PageHandler page) {
 	this->containedPoints = data+3+(2*dimensionalityGlobal);
 }
 
+//  Fully correct
 void leafNode::insertPoint(int * point) {
 	if (*numPoints >= maxCapGlobal) {
 		throw LeafNodeFullException();
 	}
+
+	// std::cout << "I ";
+	// for (int i = 0; i < dimensionalityGlobal; i++) {
+	// 	std::cout << *(point+i) << " ";
+	// }
+	// std::cout << std::endl;
 	
-	memcpy(containedPoints + (*this->numPoints), this->numPoints, sizeof(int) * dimensionalityGlobal);
+	memcpy(this->containedPoints + (dimensionalityGlobal * (*this->numPoints)), point, sizeof(int) * dimensionalityGlobal);
+
+	// std::cout << "C ";
+	// for (int i = 0; i < dimensionalityGlobal; i++) {
+	// 	std::cout << *((this->containedPoints + (dimensionalityGlobal * (*this->numPoints)))+i) << " ";
+	// }
+	// std::cout << std::endl;
+
 
 	// Update MBR
 	for (int i = 0; i < dimensionalityGlobal; i++) {
