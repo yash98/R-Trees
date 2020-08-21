@@ -6,8 +6,9 @@
 class rTree
 {
 public:
-	int dimensionality;
-	int maxCap;
+	int * rootId;
+	int * dimensionality;
+	int * maxCap;
 
 	rTree(int dimensionality, int maxCap, const char * treeFileName);
 	~rTree();
@@ -17,12 +18,10 @@ public:
 	int query(const int * point);
 
 private:
-	int rootId;
-
 	FileHandler rTreeFile;
 	FileManager rTreeFileManager;
 
-	void writeInfoPage();
+	void setGlobals();
 };
 
 
