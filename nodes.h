@@ -9,8 +9,14 @@ extern int maxCapGlobal;
 enum NodeType{internal, leaf};
 
 NodeType TypeOf(PageHandler page);
-int pointEquality(const int * a, const int * b);
-int containedIn(const int * mbr[2], const int* p);
+int pointEquality(int * a, int * b);
+int containedIn(int * mbr[2], int* p);
+
+long long areaEnlargement(int * mbr[2], int* p);
+long long area(int * mbr[2]);
+
+long long distance(int * p1, int * p2);
+long long groupingInefficiency(int * mbr1[2], int* mbr2[2]);
 
 // point can be seen as a dimensionality dimension tuple
 class internalNode {
@@ -49,6 +55,10 @@ public:
 	void initPageData(PageHandler page);
 
 	void insertNode(PageHandler childPage);
+	void updateMBR(int * childMBR[2]);
+	void replaceChild(int index, PageHandler replacementChildPage);
+
+	int findChild(int childId);
 };
 
 class leafNode {

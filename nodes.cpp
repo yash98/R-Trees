@@ -4,9 +4,48 @@
 #include <cstring>
 #include <limits>
 #include <algorithm>
+#include <cmath>
 #include <iostream>
 
-int pointEquality(const int * a, const int * b) { 
+long long groupingInefficiency(int * mbr1[2], int* mbr2[2]) {
+	return 2;
+}
+
+long long area(int * mbr[2]) {
+	return 2;
+}
+
+long long distance(int * p1, int * p2) {
+	long long squaredSum = 0;
+
+	for (int i=0; i<dimensionalityGlobal; i++) {
+		squaredSum += (long long) std::pow(*(p1+i) - *(p2-i), 2);
+	}
+
+	return squaredSum;
+}
+
+
+long long areaEnlargement(int * mbr[2], int* p) {
+	int updatedMBR[2][dimensionalityGlobal];
+
+	long long oldArea = 1;
+	long long newArea = 1;
+
+	for (int i=0; i<dimensionalityGlobal; i++) {
+		updatedMBR[0][i] = std::min(*(mbr[0]+i), *(p+i));
+		updatedMBR[1][i] = std::max(*(mbr[1]+i), *(p+i));
+	}
+
+	for (int i=0; i<dimensionalityGlobal; i++) {
+		oldArea *= (long long) (*(mbr[1]+i) - *(mbr[0]+i));
+		newArea *= (long long) (updatedMBR[1][i] - updatedMBR[0][i]);
+	}
+
+	return newArea - oldArea;
+}
+
+int pointEquality(int * a, int * b) { 
 	
 	std::cout << "A ";
 	for (int i = 0; i < dimensionalityGlobal; i++) {
@@ -28,7 +67,7 @@ int pointEquality(const int * a, const int * b) {
 	return 1;
 }
 
-int containedIn(const int * mbr[2], const int* p) {
+int containedIn(int * mbr[2], int* p) {
 	std::cout << "MBR0 ";
 	for (int i = 0; i < dimensionalityGlobal; i++) {
 		std::cout << *(mbr[0]+i) << " ";
@@ -154,6 +193,63 @@ void internalNode::insertNode(PageHandler childPage) {
 
 	*this->numChilds += 1;
 }
+
+void internalNode::updateMBR(int * childMBR[2]) {
+		// Update mbr
+		for (int i = 0; i < dimensionalityGlobal; i++) {
+			if (*(this->mbr[0]+i) > *(childMBR[0]+i)) {
+				*(this->mbr[0]+i) = *(childMBR[0]+i);
+			}
+
+			if (*(this->mbr[1]+i) < *(childMBR[1]+i)) {
+				*(this->mbr[1]+i) = *(childMBR[1]+i);
+			}
+		}
+}
+
+void internalNode::replaceChild(int index, PageHandler replacementChildPage) {
+	NodeType nodeIs = TypeOf(replacementChildPage);
+	
+	if (nodeIs == internal) {
+		internalNode childNode(replacementChildPage);
+		*(this->childIds+index) = childNode.selfId;
+
+		memcpy(this->childMBRs[0]+(index*dimensionalityGlobal), childNode.mbr[0], sizeof(int)*dimensionalityGlobal);
+		memcpy(this->childMBRs[1]+(index*dimensionalityGlobal), childNode.mbr[1], sizeof(int)*dimensionalityGlobal);
+
+		// Recalculate self's MBR to to update it
+		for (int i = 0; i < dimensionalityGlobal; i++) {
+			*(this->mbr[0]+i) = std::numeric_limits<int>::max();
+			*(this->mbr[1]+i) = std::numeric_limits<int>::min();
+		}
+
+		for (int i=0; i < *this->numChilds; i++) {
+			for (int j = 0; j < dimensionalityGlobal; j++) {
+				// Child's MBRs particular dimension(/index)
+				int childMBD0 = *(this->childMBRs[0] + (i*dimensionalityGlobal)+j);
+				int childMBD1 = *(this->childMBRs[1] + (i*dimensionalityGlobal)+j);
+
+				if (*(this->mbr[0]+j) > childMBD0) {
+					*(this->mbr[0]+j) = childMBD0;
+				}
+				if (*(this->mbr[1]+j) < childMBD1) {
+					*(this->mbr[1]+j) = childMBD1;
+				}
+				
+			}
+		}
+	} 
+}
+
+int internalNode::findChild(int childId) {
+	int foundIndex = -1;
+	for (int i=0; i < *this->numChilds; i++) {
+		if (*(this->childIds+i) == childId) foundIndex = i;
+	}
+
+	return foundIndex;
+}
+
 
 struct LeafNodeFullException : public std::exception {
   const char *what () const throw () {
