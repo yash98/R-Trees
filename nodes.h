@@ -9,6 +9,8 @@ extern int maxCapGlobal;
 enum NodeType{internal, leaf};
 
 NodeType TypeOf(PageHandler page);
+int pointEquality(const int * a, const int * b);
+int containedIn(const int * mbr[2], const int* p);
 
 // point can be seen as a dimensionality dimension tuple
 class internalNode {

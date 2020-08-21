@@ -104,6 +104,8 @@ int rTree::assignParent(int start, int end) {
 			this->rTreeFile.UnpinPage(currentChildPage);
 			currentChildPage++;
 		}
+
+		this->rTreeFile.MarkDirty(newEnd);
 	}
 
 	//  Base case for root node
@@ -120,9 +122,36 @@ int rTree::insert(const int * point) {
 }
 
 int rTree::query(const int * point) {
-	return 1;
+	this->setGlobals();
+	return dfs(*this->rootId, point);
 }
 
+int rTree::dfs(int pageId, const int * point) {
+	PageHandler currentNodePage = this->rTreeFile.PageAt(pageId);
+	NodeType nodeIs = TypeOf(currentNodePage);
+
+	if (nodeIs == leaf) {
+		leafNode currentNode(currentNodePage);
+		for (int i=0; i < *currentNode.numPoints; i++) {
+			if (pointEquality(currentNode.containedPoints+i, point)) {
+				this->rTreeFile.UnpinPage(pageId);
+				return 1;
+			}
+		}
+	} else {
+		internalNode currentNode(currentNodePage);
+		for (int i=0; i < *currentNode.numChilds; i++) {
+			const int * childMBR[2] = {currentNode.childMBRs[0]+i, currentNode.childMBRs[1]+i};
+			if (containedIn(childMBR, point)) {
+				this->rTreeFile.UnpinPage(pageId);
+				return dfs(*(currentNode.childIds+i), point);
+			}
+		}
+	}
+
+	this->rTreeFile.UnpinPage(pageId);
+	return 0;
+}
 
 int main(int argc, char * argv[]) {
 	// ./rtree query.txt maxCap dimensionality output.txt

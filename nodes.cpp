@@ -5,6 +5,20 @@
 #include <limits>
 #include <algorithm>
 
+int pointEquality(const int * a, const int * b) {
+	for (int i = 0; i < dimensionalityGlobal; i++) {
+		if (*(a+i) != *(b+i)) return 0;
+	}
+	return 1;
+}
+
+int containedIn(const int * mbr[2], const int* p) {
+	for (int i = 0; i < dimensionalityGlobal; i++) {
+		if ((*(p+i) <= *(mbr[0]+i)) || (*(mbr[1]+i) <= *(p+i))) return 0;
+	}
+	return 1;
+}
+
 struct InvalidAccessException : public std::exception {
   const char *what () const throw () {
     return "Access of page 0 is Denied";

@@ -24,6 +24,7 @@ public:
 private:
 	void setGlobals();
 	int assignParent(int start, int end);
+	int dfs(int pageId, const int * point);
 };
 
 
