@@ -1,5 +1,4 @@
 #include "rTree.h"
-#include "nodes.h"
 #include "constants.h"
 
 #include <fstream>
@@ -27,7 +26,6 @@ rTree::rTree(int dimensionalityInput, int maxCapInput,  const char * treeFileNam
 	this->maxCap = data + 2;
 
 	this->rTreeFile.MarkDirty(0);
-	this->rTreeFile.UnpinPage(0);
 }
 
 rTree::~rTree() {
@@ -44,22 +42,23 @@ void rTree::bulkLoad(const char * filename, int numPoints) {
 
 	FileHandler dataPointFile = this->rTreeFileManager.OpenFile(filename);
 
-	std::cout << numPoints << " number of points" << std::endl;
-
 	int pointFromPage = 0;
 	int maxPointFromPage = floor(PAGE_CONTENT_SIZE/(sizeof(int) * dimensionalityGlobal));
 
-	int currentPage = 1;
+	int currentPage = 0;
 	int pointCount = 0;
 
 	int * data = (int *) dataPointFile.PageAt(currentPage).GetData();
 
+	int endLeafPage;
 
 	// Instead of number of slab condition
 	while (pointCount < numPoints) {
 		PageHandler leafPage = this->rTreeFile.NewPage();
+		endLeafPage = leafPage.GetPageNum();
+
 		leafNode currentLeaf(leafPage);
-		currentLeaf.resetMBR();
+		currentLeaf.initPageData(leafPage);
 		
 		// Writing points to leaf
 		for (int i=0; i < std::min(maxCapGlobal, numPoints-pointCount); i++) {
@@ -83,8 +82,44 @@ void rTree::bulkLoad(const char * filename, int numPoints) {
 		dataPointFile.MarkDirty(leafPage.GetPageNum());
 		// TODO: Unpinning will happen in assignParent 
 	}
-
 	dataPointFile.UnpinPage(currentPage);
+
+	*(this->rootId) = assignParent(1, endLeafPage, leaf);
+}
+
+int rTree::assignParent(int start, int end, NodeType nodeIs) {
+	//  Base case for root node
+	if (start - end == 0) {
+		if (nodeIs == leaf) {
+			// TODO: Assign parent to leaf and return the parent as root
+		} else {
+			this->rTreeFile.UnpinPage(start);
+			return start;
+		}
+
+	}
+
+	int newStart = end + 1;
+	int newEnd;
+
+	int currentChildPage = start;
+
+	while (currentChildPage <= end) {
+		// Parent Node creation
+		PageHandler parentPage = this->rTreeFile.NewPage();
+		newEnd = parentPage.GetPageNum();
+
+		internalNode parentNode(parentPage);
+		parentNode.initPageData(parentPage);
+		for (int i=0; i<std::min(maxCapGlobal, end-currentChildPage+1); i++) {
+			parentNode.insertNode(this->rTreeFile.PageAt(currentChildPage));
+
+			this->rTreeFile.UnpinPage(currentChildPage);
+			currentChildPage++;
+		}
+	}
+
+	return assignParent(newStart, newEnd, internal);
 }
 
 int rTree::insert(const int * point) {

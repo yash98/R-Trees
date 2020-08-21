@@ -2,6 +2,7 @@
 #define RTREE_H
 
 #include "file_manager.h"
+#include "nodes.h"
 
 class rTree
 {
@@ -22,6 +23,8 @@ private:
 	FileManager rTreeFileManager;
 
 	void setGlobals();
+
+	int assignParent(int start, int end, NodeType nodeIs);
 };
 
 

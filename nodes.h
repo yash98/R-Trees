@@ -8,11 +8,21 @@ extern int maxCapGlobal;
 
 enum NodeType{internal, leaf};
 
+NodeType TypeOf(PageHandler page);
+
 // point can be seen as a dimensionality dimension tuple
 class internalNode {
 	/*
 	Page Memory Layout
-	1.
+	1. enum - type of node
+	2. parentId = 1 int
+	3. numChilds = 1 int
+	4. mbr = 2 * dimensionality int
+	5. childIds = maxCap int
+	6. childMBRs
+		1. First, first childs' MBR[0] in contigious memory
+		2. Then, second child's MBR[0] till maxCap number of children
+		3. when MBR[0] is exhausted, MBR[1] section for child start
 	*/
 public:
 	int selfId;
@@ -29,23 +39,24 @@ public:
 	// maxCap number of child ids
 	int * childIds;
 
-	// MBR (lower bound and upper bound i.e. [2]) of maxCap children (first *) and child has dimensionality dimensions (second *)
-	// Accessing i th dimension of MBR's upper bound of 3rd child *((*((childMBRs+2)[1]))+i)
-	// first de-reference to get to i th point
-	// second de-reference to get the j th dimension 
 	int * childMBRs[2];
 
 	internalNode(PageHandler page);
 	~internalNode();
+
+	void initPageData(PageHandler page);
+
+	void insertNode(PageHandler childPage);
 };
 
 class leafNode {
 	/* 
 	Page Memory Layout
-	1. parentId = 1 int
-	2. numPoints = 1 int
-	3. mbr = 2 * dimensionality int
-	4. points = maxCap * dimensionality int
+	1. enum - type of node
+	2. parentId = 1 int
+	3. numPoints = 1 int
+	4. mbr = 2 * dimensionality int
+	5. points = maxCap * dimensionality int
 		1. dimensionality ints contigious for first point first
 		2. now data for second int
 	*/
@@ -65,9 +76,9 @@ public:
 	leafNode(PageHandler page);
 	~leafNode();
 
+	void initPageData(PageHandler page);
+
 	void insertPoint(int * point);
-	
-	void resetMBR();
 };
 
 #endif

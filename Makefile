@@ -4,7 +4,7 @@ treeobjects = buffer_manager.o file_manager.o nodes.o rTree.o
 
 rtree: $(treeobjects)
 	rm -f tree.txt
-	g++ $(flags) -o rtree $(treeobjects)
+	g++ $(flags) -lm -o rtree $(treeobjects)
 
 sample_run : $(sampleobjects)
 	g++ $(flags) -o sample_run $(sampleobjects)
