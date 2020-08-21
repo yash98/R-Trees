@@ -28,10 +28,6 @@ rTree::rTree(int dimensionalityInput, int maxCapInput,  const char * treeFileNam
 	this->rTreeFile.MarkDirty(0);
 }
 
-rTree::~rTree() {
-	std::cout << "rTree Destructor called" << std::endl;
-}
-
 void rTree::setGlobals() {
 	dimensionalityGlobal = *(this->dimensionality);
 	maxCapGlobal = *(this->maxCap);
@@ -84,21 +80,12 @@ void rTree::bulkLoad(const char * filename, int numPoints) {
 	}
 	dataPointFile.UnpinPage(currentPage);
 
-	*(this->rootId) = assignParent(1, endLeafPage, leaf);
+	this->rTreeFileManager.CloseFile(dataPointFile);
+
+	*(this->rootId) = assignParent(1, endLeafPage);
 }
 
-int rTree::assignParent(int start, int end, NodeType nodeIs) {
-	//  Base case for root node
-	if (start - end == 0) {
-		if (nodeIs == leaf) {
-			// TODO: Assign parent to leaf and return the parent as root
-		} else {
-			this->rTreeFile.UnpinPage(start);
-			return start;
-		}
-
-	}
-
+int rTree::assignParent(int start, int end) {
 	int newStart = end + 1;
 	int newEnd;
 
@@ -119,7 +106,13 @@ int rTree::assignParent(int start, int end, NodeType nodeIs) {
 		}
 	}
 
-	return assignParent(newStart, newEnd, internal);
+	//  Base case for root node
+	if (start - end <= maxCapGlobal) {
+		this->rTreeFile.UnpinPage(newStart);
+		return newStart;
+	}
+
+	return assignParent(newStart, newEnd);
 }
 
 int rTree::insert(const int * point) {
@@ -150,6 +143,8 @@ int main(int argc, char * argv[]) {
 
 	auto pointCopy = [&queryFile, &point, &dimensionalityInput]() {for (int i = 0; i < dimensionalityInput; i++) queryFile >> point[i];};
 	
+	std::string delimiter = "\n\n\n";
+
 	while(queryFile >> queryType) {
 		if (queryType == "BULKLOAD") {
 
@@ -159,26 +154,29 @@ int main(int argc, char * argv[]) {
 			queryFile >> numPoints;
 
 			tree.bulkLoad(bulkloadFileName.c_str(), numPoints);
-			outputFile << "BULKLOAD" << std::endl;
+			outputFile << "BULKLOAD" << delimiter;
 
 		} else if (queryType == "INSERT") {
 
 			pointCopy();
 			tree.insert(point);
-			outputFile << "INSERT" << std::endl;
+			outputFile << "INSERT" << delimiter;
 
 		} else if (queryType == "QUERY") {
 
 			pointCopy();
 
-			if (tree.query(point)) outputFile << "TRUE" << std::endl;
-			else outputFile << "FALSE" << std::endl;
+			if (tree.query(point)) outputFile << "TRUE" << delimiter;
+			else outputFile << "FALSE" << delimiter;
 
 		} else {
-			outputFile << "UNEXPECTED" << std::endl;
+			outputFile << "UNEXPECTED" << delimiter;
 		}
 	}
 
 	queryFile.close();
 	outputFile.close();
+
+	tree.rTreeFileManager.ClearBuffer();
+	tree.rTreeFileManager.DestroyFile("tree.txt");
 };

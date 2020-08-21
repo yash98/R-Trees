@@ -42,7 +42,7 @@ public:
 	int * childMBRs[2];
 
 	internalNode(PageHandler page);
-	~internalNode();
+	// ~internalNode();
 
 	void initPageData(PageHandler page);
 
@@ -74,7 +74,7 @@ public:
 	int * containedPoints;
 
 	leafNode(PageHandler page);
-	~leafNode();
+	// ~leafNode();
 
 	void initPageData(PageHandler page);
 

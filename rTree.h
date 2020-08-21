@@ -11,20 +11,19 @@ public:
 	int * dimensionality;
 	int * maxCap;
 
+	FileHandler rTreeFile;
+	FileManager rTreeFileManager;
+
 	rTree(int dimensionality, int maxCap, const char * treeFileName);
-	~rTree();
+	// ~rTree();
 
 	void bulkLoad(const char * filename, int numPoints);
 	int insert(const int * point);
 	int query(const int * point);
 
 private:
-	FileHandler rTreeFile;
-	FileManager rTreeFileManager;
-
 	void setGlobals();
-
-	int assignParent(int start, int end, NodeType nodeIs);
+	int assignParent(int start, int end);
 };
 
 
