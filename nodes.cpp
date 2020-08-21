@@ -8,11 +8,23 @@
 #include <iostream>
 
 long long groupingInefficiency(int * mbr1[2], int* mbr2[2]) {
-	return 2;
+	int resultantMBR[2][dimensionalityGlobal];
+	for (int i=0; i < dimensionalityGlobal; i++) {
+		resultantMBR[0][i] = std::min(*(mbr1[0]+i), *(mbr2[0]+i));
+		resultantMBR[1][i] = std::max(*(mbr1[1]+i), *(mbr2[1]+i));
+	}
+
+	int * convertedMBR[2] = {&resultantMBR[0][0], &resultantMBR[1][0]};
+
+	return area(convertedMBR) - area(mbr1) - area(mbr2);
 }
 
 long long area(int * mbr[2]) {
-	return 2;
+	long long areaStore = 1;
+	for (int i=0; i < dimensionalityGlobal; i++) {
+		areaStore *= (long long) std::abs(*(mbr[1]+i) - *(mbr[0]+i));
+	}
+	return areaStore;
 }
 
 long long distance(int * p1, int * p2) {
