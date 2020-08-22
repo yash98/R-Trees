@@ -10,7 +10,7 @@
 			"type": "cppdbg",
 			"request": "launch",
 			"program": "${workspaceFolder}/rtree",
-			"args": ["Testcases/TC_1/queries_2_10_100_100.txt", "10", "2", "output.txt"],
+			"args": ["Testcases/TC_5/queries_2_10_100000_100000.txt", "10", "2", "output_tc5.txt"],
 			"stopAtEntry": false,
 			"cwd": "${workspaceFolder}",
 			"environment": [],

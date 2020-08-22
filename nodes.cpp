@@ -69,50 +69,50 @@ long long areaEnlargement(int * mbr[2], int* p) {
 
 int pointEquality(int * a, int * b) { 
 	
-	std::cout << "A ";
-	for (int i = 0; i < dimensionalityGlobal; i++) {
-		std::cout << *(a+i) << " ";
-	}
+	// std::cout << "A ";
+	// for (int i = 0; i < dimensionalityGlobal; i++) {
+	// 	std::cout << *(a+i) << " ";
+	// }
 
-	std::cout << "B ";
-	for (int i = 0; i < dimensionalityGlobal; i++) {
-		std::cout << *(b+i) << " ";
-	}
+	// std::cout << "B ";
+	// for (int i = 0; i < dimensionalityGlobal; i++) {
+	// 	std::cout << *(b+i) << " ";
+	// }
 
 	for (int i = 0; i < dimensionalityGlobal; i++) {
 		if (*(a+i) != *(b+i)) {
-			std::cout << "FALSE" << std::endl;
+			// std::cout << "FALSE" << std::endl;
 			return 0;
 		}
 	}
-	std::cout << "TRUE" << std::endl;
+	// std::cout << "TRUE" << std::endl;
 	return 1;
 }
 
 int containedIn(int * mbr[2], int* p) {
-	std::cout << "MBR0 ";
-	for (int i = 0; i < dimensionalityGlobal; i++) {
-		std::cout << *(mbr[0]+i) << " ";
-	}
+	// std::cout << "MBR0 ";
+	// for (int i = 0; i < dimensionalityGlobal; i++) {
+	// 	std::cout << *(mbr[0]+i) << " ";
+	// }
 
-	std::cout << "MBR1 ";
-	for (int i = 0; i < dimensionalityGlobal; i++) {
-		std::cout << *(mbr[1]+i) << " ";
-	}
+	// std::cout << "MBR1 ";
+	// for (int i = 0; i < dimensionalityGlobal; i++) {
+	// 	std::cout << *(mbr[1]+i) << " ";
+	// }
 	
-	std::cout << "P ";
-	for (int i = 0; i < dimensionalityGlobal; i++) {
-		std::cout << *(p+i) << " ";
-	}
+	// std::cout << "P ";
+	// for (int i = 0; i < dimensionalityGlobal; i++) {
+	// 	std::cout << *(p+i) << " ";
+	// }
 	
 	for (int i = 0; i < dimensionalityGlobal; i++) {
 		if ((*(p+i) < *(mbr[0]+i)) || (*(mbr[1]+i) < *(p+i))) {
-			std::cout << "FALSE" << std::endl;
+			// std::cout << "FALSE" << std::endl;
 			return 0;
 		}
 	}
 	
-	std::cout << "TRUE" << std::endl;
+	// std::cout << "TRUE" << std::endl;
 	return 1;
 }
 

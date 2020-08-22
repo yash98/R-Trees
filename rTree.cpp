@@ -69,9 +69,11 @@ void rTree::bulkLoad(const char * filename, int numPoints) {
 		for (int i=0; i < pieces; i++) {
 
 			// Page changing condition
-			if (pointFromPage >= maxPointFromPage) {
+			if (pointFromPage == maxPointFromPage) {
 				dataPointFile.UnpinPage(currentPage);
-				data = (int *) dataPointFile.PageAt(currentPage++).GetData();
+				dataPointFile.FlushPage(currentPage);
+				currentPage++;
+				data = (int *) dataPointFile.PageAt(currentPage).GetData();
 				pointFromPage = 0;
 			}
 
@@ -95,6 +97,7 @@ void rTree::bulkLoad(const char * filename, int numPoints) {
 		this->rTreeFile.FlushPage(leafPage.GetPageNum());
 	}
 	dataPointFile.UnpinPage(currentPage);
+	dataPointFile.FlushPage(currentPage);
 
 	this->rTreeFileManager.CloseFile(dataPointFile);
 
@@ -134,7 +137,7 @@ int rTree::assignParent(int start, int end) {
 	}
 
 	//  Base case for root node
-	if (start - end <= maxCapGlobal) {
+	if (end - start + 1 <= maxCapGlobal) {
 		return newStart;
 	}
 
@@ -561,7 +564,7 @@ int rTree::query(int * point) {
 
 
 int rTree::dfs(int pageId, int * point) {
-	std::cout << depth << std::endl;
+	// std::cout << depth << std::endl;
 	depth++;
 
 	PageHandler currentNodePage = this->rTreeFile.PageAt(pageId);
