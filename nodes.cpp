@@ -232,7 +232,7 @@ void internalNode::updateMBR(int * childMBR[2]) {
 void internalNode::replaceChild(int index, PageHandler replacementChildPage) {
 	genericNode childNode(replacementChildPage);
 
-	std::cout << "R " << index << " PARENT " << this->selfId  << " PID " << childNode.selfId << std::endl;
+	// std::cout << "R " << index << " PARENT " << this->selfId  << " PID " << childNode.selfId << std::endl;
 
 
 	*(this->childIds+index) = childNode.selfId;
@@ -269,7 +269,7 @@ int internalNode::findChild(int childId) {
 		if (*(this->childIds+i) == childId) foundIndex = i;
 	}
 	
-	std::cout << "F " << foundIndex << " PID " << childId << std::endl;
+	// std::cout << "F " << foundIndex << " PID " << childId << std::endl;
 	return foundIndex;
 }
 

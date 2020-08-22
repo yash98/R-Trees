@@ -78,11 +78,11 @@ void rTree::bulkLoad(const char * filename, int numPoints) {
 			}
 
 			// Insert Point
-			std::cout << "B ";
-			for (int j = 0; j < dimensionalityGlobal; j++) {
-				std::cout << *(data+j) << " ";
-			}
-			std::cout << std::endl;
+			// std::cout << "B ";
+			// for (int j = 0; j < dimensionalityGlobal; j++) {
+			// 	std::cout << *(data+j) << " ";
+			// }
+			// std::cout << std::endl;
 
 			currentLeaf.insertPoint(data);
 
@@ -147,22 +147,22 @@ int rTree::assignParent(int start, int end) {
 void rTree::insert(int * point) {
 	this->setGlobals();
 
-	std::cout << "I ";
-	for (int i = 0; i < dimensionalityGlobal; i++) {
-		std::cout << *(point+i) << " ";
-	}
-	std::cout << std::endl;
+	// std::cout << "I ";
+	// for (int i = 0; i < dimensionalityGlobal; i++) {
+	// 	std::cout << *(point+i) << " ";
+	// }
+	// std::cout << std::endl;
 
 	int selectedLeafId = selectLeaf(*this->rootId, point);
 
 	PageHandler selectedLeafPage = this->rTreeFile.PageAt(selectedLeafId);
 	leafNode selectedLeaf(selectedLeafPage);
 
-	std::cout << "SELECTED " << selectedLeafId << std::endl; 
+	// std::cout << "SELECTED " << selectedLeafId << std::endl; 
 
 	//  This handle all the insertion for leaf
 	if (*selectedLeaf.numPoints < maxCapGlobal) {
-		std::cout << "LEAF INS NO SPLIT" << std::endl;
+		// std::cout << "LEAF INS NO SPLIT" << std::endl;
 
 		selectedLeaf.insertPoint(point);
 
@@ -171,7 +171,7 @@ void rTree::insert(int * point) {
 		this->rTreeFile.MarkDirty(selectedLeafId);
 		this->unpinAndFlush(selectedLeafId);
 	} else {
-		std::cout << "LEAF INS SPLITTING" << std::endl;
+		// std::cout << "LEAF INS SPLITTING" << std::endl;
 
 		// Spliting
 		// Quadratic Split
@@ -276,7 +276,7 @@ void rTree::propagateUp(int pageId, int didItSplit, int child1, int child2, int 
 	PageHandler selectedPage = this->rTreeFile.PageAt(pageId);
 	internalNode selectedNode(selectedPage);
 
-	std::cout << "PROPAGATING: SELF " << pageId << " CHILDREN " << child1 << " " << child2 << std::endl;
+	// std::cout << "PROPAGATING: SELF " << pageId << " CHILDREN " << child1 << " " << child2 << std::endl;
 
 	int isRoot = 0;
 	if (*selectedNode.parentId == -1) isRoot = 1;
@@ -284,7 +284,7 @@ void rTree::propagateUp(int pageId, int didItSplit, int child1, int child2, int 
 	if (didItSplit) {
 		if (*selectedNode.numChilds < maxCapGlobal) {
 			// Find index of previously existing child
-			std::cout << "INTERNAL INS NO SPLIT" << std::endl;
+			// std::cout << "INTERNAL INS NO SPLIT" << std::endl;
 
 			PageHandler childPage1 = this->rTreeFile.PageAt(child1);
 			PageHandler childPage2 = this->rTreeFile.PageAt(child2);
@@ -315,7 +315,7 @@ void rTree::propagateUp(int pageId, int didItSplit, int child1, int child2, int 
 			this->rTreeFile.FlushPage(pageId);
 
 		} else {
-			std::cout << "INTERNAL INS SPLITTING" << std::endl;
+			// std::cout << "INTERNAL INS SPLITTING" << std::endl;
 
 			int foundIndex = selectedNode.findChild(prevChildId);
 
@@ -341,8 +341,6 @@ void rTree::propagateUp(int pageId, int didItSplit, int child1, int child2, int 
 					} else {
 						requiredPage = *(selectedNode.childIds+j);
 					}
-
-					this->rTreeFileManager.PrintBuffer();
 
 					PageHandler seedChildPage2 = this->rTreeFile.PageAt(requiredPage);
 					genericNode seedChild2(seedChildPage2);
@@ -388,7 +386,7 @@ void rTree::propagateUp(int pageId, int didItSplit, int child1, int child2, int 
 			this->rTreeFile.MarkDirty(bestChildId2);
 			this->unpinAndFlush(bestChildId2);
 
-			std::cout << "SPLIT INTERNAL NODES " << splittedNode1.selfId << " " << splittedNode2.selfId << std::endl;
+			// std::cout << "SPLIT INTERNAL NODES " << splittedNode1.selfId << " " << splittedNode2.selfId << std::endl;
 
 			for (int i=0; i < maxCapGlobal+1; i++) {
 				int requiredPage;
@@ -487,7 +485,7 @@ void rTree::propagateUp(int pageId, int didItSplit, int child1, int child2, int 
 		}
 	} else {
 		// Update childs MBR saved in parents node
-		std::cout << "JUST UPDATING UPWARD" << std::endl;
+		// std::cout << "JUST UPDATING UPWARD" << std::endl;
 		int foundIndex = selectedNode.findChild(child1);
 
 		memcpy(selectedNode.childMBRs[0] + (foundIndex*dimensionalityGlobal), childsUpdatedMBR[0], sizeof(int)*dimensionalityGlobal);
@@ -552,13 +550,13 @@ int rTree::query(int * point) {
 
 	int found = dfs(*this->rootId, point);
 
-	std::cout << "Q ";
-	for (int i = 0; i < dimensionalityGlobal; i++) {
-		std::cout << *(point+i) << " ";
-	}
+	// std::cout << "Q ";
+	// for (int i = 0; i < dimensionalityGlobal; i++) {
+		// std::cout << *(point+i) << " ";
+	// }
 
 
-	std::cout << found << std::endl;
+	// std::cout << found << std::endl;
 	return found;
 }
 
@@ -617,8 +615,8 @@ int main(int argc, char * argv[]) {
 	
 	std::string delimiter = "\n\n\n";
 
-	// try
-	// {
+	try
+	{
 		while(queryFile >> queryType) {
 			if (queryType == "BULKLOAD") {
 
@@ -646,15 +644,15 @@ int main(int argc, char * argv[]) {
 			} else {
 				outputFile << "UNEXPECTED" << delimiter;
 			}
-			std::cout << "---" << std::endl;
-			tree.rTreeFileManager.PrintBuffer();
-			std::cout << "---" << std::endl;
+			// std::cout << "---" << std::endl;
+			// tree.rTreeFileManager.PrintBuffer();
+			// std::cout << "---" << std::endl;
 		}
-	// }
-	// catch(const std::exception& e)
-	// {
-	// 	std::cerr << e.what() << '\n';
-	// }
+	}
+	catch(const std::exception& e)
+	{
+		std::cerr << e.what() << '\n';
+	}
 
 	queryFile.close();
 	outputFile.close();
