@@ -18,6 +18,17 @@ long long area(int * mbr[2]);
 long long distance(int * p1, int * p2);
 long long groupingInefficiency(int * mbr1[2], int* mbr2[2]);
 
+// Limited commmon info that both type of nodes have
+class genericNode {
+public:
+	int selfId;
+	NodeType typeOfNode;
+	int * mbr[2];
+	int * parentId;
+
+	genericNode(PageHandler page);
+};
+
 // point can be seen as a dimensionality dimension tuple
 class internalNode {
 	/*

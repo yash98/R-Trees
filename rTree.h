@@ -4,6 +4,7 @@
 #include "file_manager.h"
 #include "nodes.h"
 
+
 class rTree
 {
 public:
@@ -27,6 +28,7 @@ private:
 	int dfs(int pageId, int * point);
 	int selectLeaf(int pageId, int * point);
 	void propagateUp(int pageId, int didItSplit, int child1, int child2, int * childsUpdatedMBR[2], int prevChildId);
+	void unpinAndFlush(int pageId);
 };
 
 

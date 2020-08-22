@@ -7,6 +7,16 @@
 #include <cmath>
 #include <iostream>
 
+genericNode::genericNode(PageHandler page) {
+	int * data = (int *) page.GetData();
+
+	this->typeOfNode = (NodeType) *data;
+	this->selfId = page.GetPageNum();
+	this->parentId = data+1;
+	this->mbr[0] = data+3;
+	this->mbr[1] = data+3+dimensionalityGlobal;
+}
+
 long long groupingInefficiency(int * mbr1[2], int* mbr2[2]) {
 	int resultantMBR[2][dimensionalityGlobal];
 	for (int i=0; i < dimensionalityGlobal; i++) {
@@ -220,37 +230,37 @@ void internalNode::updateMBR(int * childMBR[2]) {
 }
 
 void internalNode::replaceChild(int index, PageHandler replacementChildPage) {
-	NodeType nodeIs = TypeOf(replacementChildPage);
-	
-	if (nodeIs == internal) {
-		internalNode childNode(replacementChildPage);
-		*(this->childIds+index) = childNode.selfId;
+	genericNode childNode(replacementChildPage);
 
-		memcpy(this->childMBRs[0]+(index*dimensionalityGlobal), childNode.mbr[0], sizeof(int)*dimensionalityGlobal);
-		memcpy(this->childMBRs[1]+(index*dimensionalityGlobal), childNode.mbr[1], sizeof(int)*dimensionalityGlobal);
+	std::cout << "R " << index << " PARENT " << this->selfId  << " PID " << childNode.selfId << std::endl;
 
-		// Recalculate self's MBR to to update it
-		for (int i = 0; i < dimensionalityGlobal; i++) {
-			*(this->mbr[0]+i) = std::numeric_limits<int>::max();
-			*(this->mbr[1]+i) = std::numeric_limits<int>::min();
-		}
 
-		for (int i=0; i < *this->numChilds; i++) {
-			for (int j = 0; j < dimensionalityGlobal; j++) {
-				// Child's MBRs particular dimension(/index)
-				int childMBD0 = *(this->childMBRs[0] + (i*dimensionalityGlobal)+j);
-				int childMBD1 = *(this->childMBRs[1] + (i*dimensionalityGlobal)+j);
+	*(this->childIds+index) = childNode.selfId;
 
-				if (*(this->mbr[0]+j) > childMBD0) {
-					*(this->mbr[0]+j) = childMBD0;
-				}
-				if (*(this->mbr[1]+j) < childMBD1) {
-					*(this->mbr[1]+j) = childMBD1;
-				}
-				
+	memcpy(this->childMBRs[0]+(index*dimensionalityGlobal), childNode.mbr[0], sizeof(int)*dimensionalityGlobal);
+	memcpy(this->childMBRs[1]+(index*dimensionalityGlobal), childNode.mbr[1], sizeof(int)*dimensionalityGlobal);
+
+	// Recalculate self's MBR to to update it
+	for (int i = 0; i < dimensionalityGlobal; i++) {
+		*(this->mbr[0]+i) = std::numeric_limits<int>::max();
+		*(this->mbr[1]+i) = std::numeric_limits<int>::min();
+	}
+
+	for (int i=0; i < *this->numChilds; i++) {
+		for (int j = 0; j < dimensionalityGlobal; j++) {
+			// Child's MBRs particular dimension(/index)
+			int childMBD0 = *(this->childMBRs[0] + (i*dimensionalityGlobal)+j);
+			int childMBD1 = *(this->childMBRs[1] + (i*dimensionalityGlobal)+j);
+
+			if (*(this->mbr[0]+j) > childMBD0) {
+				*(this->mbr[0]+j) = childMBD0;
 			}
+			if (*(this->mbr[1]+j) < childMBD1) {
+				*(this->mbr[1]+j) = childMBD1;
+			}
+			
 		}
-	} 
+	}
 }
 
 int internalNode::findChild(int childId) {
@@ -258,7 +268,8 @@ int internalNode::findChild(int childId) {
 	for (int i=0; i < *this->numChilds; i++) {
 		if (*(this->childIds+i) == childId) foundIndex = i;
 	}
-
+	
+	std::cout << "F " << foundIndex << " PID " << childId << std::endl;
 	return foundIndex;
 }
 
